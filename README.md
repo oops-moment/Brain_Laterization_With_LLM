@@ -118,3 +118,5 @@ In the same file, you should provide a valid `acces_token` in order to be able t
    %run [analyze_results.ipynb](analyze_results.ipynb)
 
 ## Preprint
+
+[arXiv:2405.17992](http://arxiv.org/abs/2405.17992)
