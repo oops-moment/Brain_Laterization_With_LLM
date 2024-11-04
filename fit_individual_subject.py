@@ -9,26 +9,32 @@ from nilearn.glm.first_level import compute_regressor
 import argparse
 import llms_brain_lateralization as lbl
 from llms_brain_lateralization import make_dir, standardize
+from nilearn.input_data import NiftiMasker
+from nilearn.masking import compute_multi_epi_mask, intersect_masks
+from nilearn.image import swap_img_hemispheres
+import nibabel as nib
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=str, default='gpt2',
                     help='model name')
-parser.add_argument('--lang', type=str, default='en',
-                    help='language: en, fr or cn')
+# parser.add_argument('--lang', type=str, default='en',
+#                     help='language: en, fr or cn')
+parser.add_argument('--subject', type=str, default='EN057',
+                    help='model name')
 args = parser.parse_args()
 
 model_name = args.model
-lang = args.lang.lower()
+sub_id = args.subject
+lang = sub_id[0:2].lower()
 
 assert lang in ['en', 'fr', 'cn'], 'This language is not available. Please choose between en, fr or cn.'
 
 activation_folder = lbl.llms_activations
-output_folder = lbl.llms_brain_correlations
+output_folder = lbl.llms_brain_correlations_individual
 make_dir(output_folder)
 
-fmri_data_avg_subject = os.path.join(lbl.home_folder, 'lpp_{}_average_subject'.format(lang))
-
-print('\n fitting model {}'.format(model_name))
+fmri_data_resampled = os.path.join(lbl.home_folder, 'lpp_{}_resampled'.format(lang))
+sub_id = os.path.join(fmri_data_resampled, 'sub-{}'.format(sub_id))
 
 n_runs = lbl.n_runs
 t_r = lbl.t_r
@@ -36,11 +42,23 @@ t_r = lbl.t_r
 hrf_model = 'glover'
 
 # fMRI
-fmri_runs = []
-for run in range(n_runs):
-    filename = os.path.join(fmri_data_avg_subject, 'average_subject_run-{}.gz'.format(run))
-    with open(filename, 'rb') as f:
-         fmri_runs.append(joblib.load(f))
+fmri_imgs_sub = sorted(glob.glob(os.path.join(sub_id, '*.nii.gz')))
+
+mask_name = 'mask_lpp_{}.nii.gz'.format(sub_id[-5:])
+if os.path.exists(mask_name):
+    mask = nib.load(mask_name)
+else:
+    print('\n computing mask for subject {}'.format(sub_id[-5:]))
+    mask = compute_multi_epi_mask(fmri_imgs_sub, threshold=0.5)
+    # symmetrize the mask
+    mask = intersect_masks([mask, swap_img_hemispheres(mask)], threshold=1.)
+    nib.save(mask, mask_name)
+
+fmri_runs = [] # n_runs x n_timesteps x n_voxels
+for fmri_img in fmri_imgs_sub:
+    nifti_masker = NiftiMasker(mask_img=mask, detrend=True, standardize=True,
+                                smoothing_fwhm=4, high_pass=1/128, t_r=t_r)
+    fmri_runs.append(nifti_masker.fit_transform(fmri_img))
 
 # number of scans per runs
 n_scans_runs = [fmri_run.shape[0] for fmri_run in fmri_runs]
@@ -51,8 +69,10 @@ n_voxels = fmri_runs[0].shape[1]
 # same for last 20 seconds
 for run in range(n_runs):
     fmri_runs[run] = fmri_runs[run][10:-10] 
-    fmri_runs[run] = standardize(fmri_runs[run])
-    
+    fmri_runs[run] = standardize(fmri_runs[run])    
+
+print('\n fitting model {}'.format(model_name))
+
 # LLM
 filename = os.path.join(activation_folder, '{}_{}.gz'.format(model_name, lang))
 with open(filename, 'rb') as f:
@@ -146,6 +166,6 @@ for idx_layer in range(n_layers):
 
     print('---->', '\t' 'mean corr = {:.03f}'.format(np.mean(corr_runs)))
 
-    filename = os.path.join(output_folder, '{}_layer-{}_corr_{}.gz'.format(model_name, idx_layer, lang))
+    filename = os.path.join(output_folder, '{}_layer-{}_corr_{}.gz'.format(model_name, idx_layer, sub_id[-5:]))
     with open(filename, 'wb') as f:
         joblib.dump(np.mean(corr_runs, axis=0), f, compress=4)

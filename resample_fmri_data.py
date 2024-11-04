@@ -1,11 +1,21 @@
 import numpy as np
 import glob
 import os
+import argparse
 from tqdm.auto import tqdm
 from nilearn.image import resample_img
 
 import llms_brain_lateralization as lbl
 from llms_brain_lateralization import make_dir
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--lang', type=str, default='en',
+                    help='language: en, fr or cn')
+args = parser.parse_args()
+lang = args.lang.lower()
+
+assert lang in ['en', 'fr', 'cn'], 'This language is not available. Please choose between en, fr or cn.'
 
 target_affine = np.array([[   4.,    0.,    0.,  -72.],
                           [   0.,    4.,    0., -106.],
@@ -14,9 +24,9 @@ target_affine = np.array([[   4.,    0.,    0.,  -72.],
 
 target_shape = (37, 46, 38)
 
-output_path = lbl.fmri_data_resampled
+output_path = os.path.join(lbl.home_folder, 'lpp_{}_resampled'.format(lang))
 
-subject_list = np.sort(glob.glob(os.path.join(lbl.fmri_data, 'sub-EN*')))
+subject_list = np.sort(glob.glob(os.path.join(lbl.fmri_data, 'sub-{}*'.format(lang.upper()))))
 
 for sub_id in tqdm(subject_list):
     sub_name = os.path.basename(sub_id)

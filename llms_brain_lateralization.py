@@ -3,27 +3,22 @@ import numpy as np
 
 # list of folders used in the study
 # main folder, containing code and figures
-home_folder = '/home/lbg/research/projects/llms_brain_lateralization'
-# path to Le Petit Prince fMRI corpus, downloaded from https://doi.org/10.18112/openneuro.ds003643.v2.0.1
-lpp_path = '/media/lbg/hdd1/data/fmri/OpenNeuro_LPP2022/ds003643-download/'
+home_folder = '/media/lbg/hdd1/llms_brain_lateralization/'
+# path to Le Petit Prince fMRI corpus, downloaded from https://doi.org/10.18112/openneuro.ds003643.v2.0.5
+lpp_path = '/media/lbg/hdd1/data/fmri/openneuro/ds003643-download/'
 
 # fmri data
 fmri_data = os.path.join(lpp_path, 'derivatives')
 # annotations, used for aligning text and speech
-annotation_folder = os.path.join(lpp_path, 'annotation', 'EN')
+annotation_folder = os.path.join(lpp_path, 'annotation')
 
-# location of 4x4x4 resampled fmri data
-fmri_data_resampled = os.path.join(home_folder, 'lpp_en_resampled')
-# location of the fmri average subject
-fmri_data_avg_subject = os.path.join(home_folder, 'lpp_en_average_subject')
-# full english text, as fed to the LLMs
-lpp_full_text = os.path.join(home_folder, 'lpp_full_english_text')
 # location of the GloVe embeddings
 glove_embeddings_path = os.path.join(home_folder, 'glove.6B.300d.txt')
 # location of activations from the various llms
 llms_activations = os.path.join(home_folder, 'llms_activations')
 # location of brain correlations for each model, for each layer
 llms_brain_correlations = os.path.join(home_folder, 'llms_brain_correlations')
+llms_brain_correlations_individual = os.path.join(home_folder, 'llms_brain_correlations_individual')
 # nii files for the roi masks
 roi_masks = os.path.join(home_folder, 'roi_masks')
 # all figures in the paper

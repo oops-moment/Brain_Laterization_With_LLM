@@ -26,16 +26,18 @@ def load_embeddings(file_path):
 glove_embeddings = load_embeddings(lbl.glove_embeddings_path)
 n_dims = glove_embeddings['the'].shape[0]
 
-filename = os.path.join(lbl.annotation_folder, 'lppEN_word_information.csv')
+filename = os.path.join(lbl.annotation_folder, 'EN', 'lppEN_word_information.csv')
 df_word_onsets = pd.read_csv(filename)
 
 df_word_onsets = df_word_onsets.drop([3919,6775,6781]) 
 # 3919: adhoc removal of repeated line with typo
 # 6775: mismatch with full text
 
+n_runs = lbl.n_runs
+
 word_list_runs = []
 onsets_offsets_runs = []
-for run in range(lbl.n_runs):
+for run in range(n_runs):
     df_word_onsets_run = df_word_onsets[df_word_onsets.section==(run+1)]
     word_list_tmp = df_word_onsets_run.word.to_numpy()
     onsets_tmp = df_word_onsets_run.onset.to_numpy()
@@ -46,7 +48,7 @@ for run in range(lbl.n_runs):
     offsets = []
     
     for idx_word, (word, onset, offset) in enumerate(zip(word_list_tmp, onsets_tmp, offsets_tmp)):
-        if isinstance(word, str):
+        if isinstance(word, str) and word != ' ':
             word_list.append(word)
             onsets.append(onset)
             offsets.append(offset)
@@ -56,7 +58,7 @@ for run in range(lbl.n_runs):
 
 runs_words_activations = []
 
-for run in range(lbl.n_runs):
+for run in range(n_runs):
     word_list = word_list_runs[run]
     
     words_activations = []
@@ -88,11 +90,11 @@ for run in range(lbl.n_runs):
     runs_words_activations.append([words_activations])
 
 # n_runs x 1 x n_words x n_neurons
-filename = os.path.join(output_folder, '{}.gz'.format(model_name))
+filename = os.path.join(output_folder, '{}_en.gz'.format(model_name))
 with open(filename, 'wb') as f:
      joblib.dump(runs_words_activations, f, compress=4)
 
-if not os.path.exists(os.path.join(lbl.llms_activations, 'onsets_offsets.gz')):
-    filename = os.path.join(output_folder, 'onsets_offsets.gz')
+if not os.path.exists(os.path.join(output_folder, 'onsets_offsets_en.gz')):
+    filename = os.path.join(output_folder, 'onsets_offsets_en.gz')
     with open(filename, 'wb') as f:
          joblib.dump(onsets_offsets_runs, f, compress=4)
