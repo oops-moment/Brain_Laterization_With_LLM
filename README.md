@@ -46,7 +46,7 @@ Download the _GloVe embeddings_:
 
 First, you must set all folders variable (`home_folder` and `lpp_path`) in [llms_brain_lateralization.py](llms_brain_lateralization.py).
 
-In the same file, you should provide a valid `acces_token` in order to be able to access the various models in huggingface that require authentication.
+In the same file, you should provide a valid `access_token` in order to be able to access the various models in huggingface that require authentication.
 
 ## Processing pipeline
 

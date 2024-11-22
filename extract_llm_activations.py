@@ -62,9 +62,9 @@ else:
 
 
 if model_name.startswith(('Meta', 'gemma', 'Mistral', 'Llama')): #require authentification
-    assert lbl.acces_token != None, "You should provide a valid `acces_token` in order to be able to access the various models in huggingface that require authentification."
-    model = AutoModelForCausalLM.from_pretrained(full_name, output_hidden_states=True, token=lbl.acces_token)
-    tokenizer = AutoTokenizer.from_pretrained(full_name, token=lbl.acces_token)
+    assert lbl.access_token != None, "You should provide a valid `access_token` in order to be able to access the various models in huggingface that require authentification."
+    model = AutoModelForCausalLM.from_pretrained(full_name, output_hidden_states=True, token=lbl.access_token)
+    tokenizer = AutoTokenizer.from_pretrained(full_name, token=lbl.access_token)
 elif model_name.startswith('pythia'):        
     tokenizer = AutoTokenizer.from_pretrained(full_name.split('_step')[0])
     model = AutoModelForCausalLM.from_pretrained(full_name.split('_step')[0], revision='step{}'.format(full_name.split('_step')[1]),
