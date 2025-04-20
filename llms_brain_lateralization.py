@@ -1,11 +1,15 @@
 import os
 import numpy as np
+from dotenv import load_dotenv
+load_dotenv()
+import os
+access_token = os.getenv("HF_TOKEN")
 
 # list of folders used in the study
 # main folder, containing code and figures
-home_folder = '/media/lbg/hdd1/llms_brain_lateralization/'
+home_folder = ''
 # path to Le Petit Prince fMRI corpus, downloaded from https://doi.org/10.18112/openneuro.ds003643.v2.0.5
-lpp_path = '/media/lbg/hdd1/data/fmri/openneuro/ds003643-download/'
+lpp_path = 'ds003643-2.0.5'
 
 # fmri data
 fmri_data = os.path.join(lpp_path, 'derivatives')
@@ -24,10 +28,8 @@ roi_masks = os.path.join(home_folder, 'roi_masks')
 # all figures in the paper
 figures_folder = os.path.join(home_folder, 'figures')
 
-n_runs = 9
+n_runs = 10
 t_r = 2 #s
-
-access_token = None
 
 # helpers
 def make_dir(directory):
