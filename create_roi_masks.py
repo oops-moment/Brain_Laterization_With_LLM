@@ -8,10 +8,12 @@ from nilearn.masking import intersect_masks
 from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from nilearn.maskers import NiftiMasker
 import nibabel as nib
+import time
 
 import llms_brain_lateralization as lbl
 from llms_brain_lateralization import make_dir
 
+start_time = time.time()
 output_path = lbl.roi_masks
 make_dir(output_path)
 
@@ -26,9 +28,11 @@ roi_dict = {'TP':(-48, 15, -27), # from Pallier et al (2011)
             'AG_TPJ':(-52, -56, 22), # from Price et al (2015)
            }
 
+print('Creating ROIs from coordinates')
 roi_coords = roi_dict.values()
 roi_names = roi_dict.keys()
 
+print("ROI Names: ", roi_names)
 def binarize_img(img, threshold):
     mask = img.get_fdata().copy()
     mask[mask < threshold] = 0.
@@ -45,9 +49,12 @@ def create_roi_from_coords(coords, mask_img=None, radius=10):
     roi_masks = binarize_img(nifti_masker.inverse_transform(A.toarray()), 0.5)
     return roi_masks
 
-mask_img = nib.load('mask_lpp_en.nii.gz')
+mask_img = nib.load('mask_lpp_fr.nii.gz')
 roi_masks = create_roi_from_coords(roi_coords, mask_img=mask_img, radius=radius)
 
 for roi_mask, roi_name in zip(iter_img(roi_masks), roi_names):
     filename = os.path.join(output_path, roi_name+'.nii.gz')
     nib.save(roi_mask, filename)
+
+end_time = time.time()
+print(f"Time taken to create ROIs: {end_time - start_time} seconds")
