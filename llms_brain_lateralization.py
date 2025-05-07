@@ -28,7 +28,7 @@ roi_masks = os.path.join(home_folder, 'roi_masks')
 # all figures in the paper
 figures_folder = os.path.join(home_folder, 'figures')
 
-n_runs = 10
+n_runs = 9
 t_r = 2 #s
 
 # helpers
